@@ -47,97 +47,155 @@ static int SAFT_TEST_SUCCESS = 0 ;
  */
 #define SAFT_PRINT_FILE_LINE() printf ("[%s:%d]", __FILE__, __LINE__)
 
+
+#define SAFT_PRINT_IN_COLOR(c,msg) printf (c msg SAFT_COLOR_RESET)
+
+/**
+ * Print a macro call as it would be written in a C source file.
+ * @param macro name of the macro called (as string).
+ * @param op1 first operand used in `macro`.
+ * @param op2 second operand used in `macro`.
+ * @param print printer used in `macro`
+ */
+#define SAFT_PRINT_MACRO_CALL(macro,op1,op2)            \
+        printf (#macro " ( " #op1 ", " #op2" )")
+
+/**
+ * @param var variable to print.
+ * @param print function to use to print `var`.
+ */
+#define SAFT_PRINT_VAR(var,print)               \
+        do                                      \
+        {                                       \
+                printf ("\t" #var " = ") ;      \
+                print (var) ;                   \
+        }                                       \
+        while (0)
 /**
  * Print a failure message.
+ * @param macro name of the macro called (as string).
  * @param op1 first operand used in test.
  * @param op2 second operand used in test.
  * @param print printing function for `exp` and `test` variables.
  */
-#define SAFT_PRINT_FAILURE(op1,op2,print)               \
-        do                                              \
-        {                                               \
-                printf (SAFT_COLOR_RED) ;               \
-                SAFT_PRINT_FILE_LINE() ;                \
-                printf (" Failure\n") ;                 \
-                printf (SAFT_COLOR_RESET) ;             \
-                printf ("\top1: ") ;                    \
-                print (op1) ;                           \
-                printf ("\n\top2: ") ;                  \
-                print (op2) ;                           \
-                printf ("\n") ;                         \
-        }                                               \
+#define SAFT_PRINT_FAILURE(macro,op1,op2,print)                         \
+        do                                                              \
+        {                                                               \
+                SAFT_PRINT_IN_COLOR(SAFT_COLOR_RED,"[FAIL] ") ;         \
+                SAFT_PRINT_FILE_LINE() ; printf(" ") ;                  \
+                SAFT_PRINT_MACRO_CALL(macro,op1,op2) ; printf ("\n") ;  \
+                SAFT_PRINT_VAR(op1,print) ; printf ("\n") ;             \
+                SAFT_PRINT_VAR(op2,print) ; printf ("\n") ;             \
+        }                                                               \
         while (0)
 
 /**
  * Print a success message.
+ * @param macro name of the macro called (as string).
+ * @param op1 first operand used in test.
+ * @param op2 second operand used in test.
+ * @param print printing function for `exp` and `test` variables.
  */
-#define SAFT_PRINT_SUCCESS()                    \
-        do                                      \
-        {                                       \
-                printf (SAFT_COLOR_GREEN) ;     \
-                SAFT_PRINT_FILE_LINE() ;        \
-                printf (" Success\n") ;         \
-                printf (SAFT_COLOR_RESET) ;     \
-        }                                       \
+#define SAFT_PRINT_SUCCESS(macro,op1,op2,print)                         \
+        do                                                              \
+        {                                                               \
+                SAFT_PRINT_IN_COLOR(SAFT_COLOR_GREEN,"[OK] ") ;         \
+                SAFT_PRINT_FILE_LINE() ; printf(" ") ;                  \
+                SAFT_PRINT_MACRO_CALL(macro,op1,op2) ; printf ("\n") ;  \
+        }                                                               \
         while (0)
 
 /**
  * Use this function to create other macro.
- * @param cond is the test used (a boolean value)
+ * Be sure to surround macro arguments with parenthesis since it is
+ * not done inside this one (because of pretty printing concern).
+ * @param macro macro name.
+ * @param cond is the test used (a boolean value).
  * @param op1 first operand used in test.
  * @param op2 first operand used in test.
  * @param print printing function for `typeof(op1)` values.
  */
-#define SAFT_MK_ASSERT(cond,op1,op2,print)                              \
+#define SAFT_MK_ASSERT(macro,cond,op1,op2,print)                        \
         do                                                              \
         {                                                               \
                 SAFT_TEST_TOTAL++;                                      \
                 if (cond)                                               \
                 {                                                       \
                         SAFT_TEST_SUCCESS++;                            \
-                        SAFT_PRINT_SUCCESS() ;                          \
+                        SAFT_PRINT_SUCCESS(macro,op1,op2,print) ;       \
                 }                                                       \
                 else                                                    \
                 {                                                       \
-                        SAFT_PRINT_FAILURE((op1),(op2),print) ;         \
+                        SAFT_PRINT_FAILURE(macro,op1,op2,print) ;       \
                 }                                                       \
         }                                                               \
         while (0)
 
 
-#define SAFT_ASSERT_EQ(op1,op2,print)                                   \
-                SAFT_MK_ASSERT(((op1)==(op2)),(op1),(op2),(print))
+#define SAFT_ASSERT_EQ(op1,op2,print)           \
+                SAFT_MK_ASSERT(SAFT_ASSERT_EQ,  \
+                               ((op1)==(op2)),  \
+                               (op1),           \
+                               (op2),           \
+                               (print))
 
-#define SAFT_ASSERT_NEQ(op1,op2,print)                                  \
-                SAFT_MK_ASSERT(((op1)!=(op2)),(op1),(op2),(print))
+#define SAFT_ASSERT_NEQ(op1,op2,print)          \
+                SAFT_MK_ASSERT(SAFT_ASSERT_NEQ, \
+                               ((op1)!=(op2)),  \
+                               (op1),           \
+                               (op2),           \
+                               (print))
 
-#define SAFT_ASSERT_LT(op1,op2,print)                                   \
-                SAFT_MK_ASSERT(((op1)<(op2)),(op1),(op2),(print))
+#define SAFT_ASSERT_LT(op1,op2,print)           \
+                SAFT_MK_ASSERT(SAFT_ASSERT_LT,  \
+                               ((op1)<(op2)),   \
+                               (op1),           \
+                               (op2),           \
+                               (print))
 
-#define SAFT_ASSERT_LTE(op1,op2,print)                                  \
-                SAFT_MK_ASSERT(((op1)<=(op2)),(op1),(op2),(print))
+#define SAFT_ASSERT_LTE(op1,op2,print)          \
+                SAFT_MK_ASSERT(SAFT_ASSERT_LTE, \
+                               ((op1)<=(op2)),  \
+                               (op1),           \
+                               (op2),           \
+                               (print))
 
-#define SAFT_ASSERT_GT(op1,op2,print)                                   \
-                SAFT_MK_ASSERT(((op1)>(op2)),(op1),(op2),(print))
+#define SAFT_ASSERT_GT(op1,op2,print)           \
+                SAFT_MK_ASSERT(SAFT_ASSERT_GT,  \
+                               ((op1)>(op2)),   \
+                               (op1),           \
+                               (op2),           \
+                               (print))
 
-#define SAFT_ASSERT_GTE(op1,op2,print)                                  \
-                SAFT_MK_ASSERT(((op1)>=(op2)),(op1),(op2),(print))
+#define SAFT_ASSERT_GTE(op1,op2,print)          \
+                SAFT_MK_ASSERT(SAFT_ASSERT_GTE, \
+                               ((op1)>=(op2)),  \
+                               (op1),           \
+                               (op2),           \
+                               (print))
 
 
 /**
  * Print total number of tests and success ratio.
  */
-#define SAFT_PRINT_SUMMARY()                                            \
+#define SAFT_PRINT_RESULTS()                                            \
                 do                                                      \
                 {                                                       \
-                        printf (SAFT_COLOR_CYAN);                       \
-                        printf ("Ran %d tests.\n", SAFT_TEST_TOTAL);    \
-                        printf ("Success: %d/%d (%d%%).\n",             \
+                        SAFT_PRINT_IN_COLOR(SAFT_COLOR_CYAN,            \
+                                            "[RESULTS]\n") ;            \
+                        printf ("\t  Total: %d tests\n",                \
+                                SAFT_TEST_TOTAL);                       \
+                        printf ("\tSuccess: %d/%d (%d%%)\n",            \
                                 SAFT_TEST_SUCCESS,                      \
                                 SAFT_TEST_TOTAL,                        \
                                 (SAFT_TEST_SUCCESS * 100)               \
                                 / SAFT_TEST_TOTAL);                     \
-                        printf (SAFT_COLOR_RESET);                      \
+                        printf ("\tFailure: %d/%d (%d%%)\n",            \
+                                SAFT_TEST_TOTAL-SAFT_TEST_SUCCESS,      \
+                                SAFT_TEST_TOTAL,                        \
+                                ((SAFT_TEST_TOTAL-SAFT_TEST_SUCCESS)    \
+                                 * 100)                                 \
+                                / SAFT_TEST_TOTAL);                     \
                 }                                                       \
                 while (0)
 

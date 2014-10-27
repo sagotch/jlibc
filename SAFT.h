@@ -39,8 +39,22 @@
 #define SAFT_COLOR_RESET ""
 #endif
 
-static int SAFT_TEST_TOTAL = 0 ;
-static int SAFT_TEST_SUCCESS = 0 ;
+struct saft_test_results
+{
+        char * id ;
+        unsigned int test_total ;
+        unsigned int test_success ;
+} ;
+
+/*
+ * Create a new `struct saft_test_result` with `name` as its `id`.
+ */
+#define SAFT_NEW_SECTION(name) (struct saft_test_results) {(name),0,0}
+
+/**
+ * Test statistics with no section will be recorded in `saft_orphan`.
+ */
+static struct saft_test_results saft_orphan = SAFT_NEW_SECTION ("") ;
 
 /**
  * Print [file:line number].
@@ -57,8 +71,8 @@ static int SAFT_TEST_SUCCESS = 0 ;
  * @param op2 second operand used in `macro`.
  * @param print printer used in `macro`
  */
-#define SAFT_PRINT_MACRO_CALL(macro,op1,op2)            \
-        printf (#macro " ( " #op1 ", " #op2" )")
+#define SAFT_PRINT_MACRO_CALL(macro,r,op1,op2)                  \
+        printf (#macro " ( " #r ", " #op1 ", " #op2" )")
 
 /**
  * @param var variable to print.
@@ -78,12 +92,12 @@ static int SAFT_TEST_SUCCESS = 0 ;
  * @param op2 second operand used in test.
  * @param print printing function for `exp` and `test` variables.
  */
-#define SAFT_PRINT_FAILURE(macro,op1,op2,print)                         \
+#define SAFT_PRINT_FAILURE(macro,r,op1,op2,print)                       \
         do                                                              \
         {                                                               \
                 SAFT_PRINT_IN_COLOR(SAFT_COLOR_RED,"[FAIL] ") ;         \
                 SAFT_PRINT_FILE_LINE() ; printf(" ") ;                  \
-                SAFT_PRINT_MACRO_CALL(macro,op1,op2) ; printf ("\n") ;  \
+                SAFT_PRINT_MACRO_CALL(macro,r,op1,op2) ; printf ("\n") ; \
                 SAFT_PRINT_VAR(op1,print) ; printf ("\n") ;             \
                 SAFT_PRINT_VAR(op2,print) ; printf ("\n") ;             \
         }                                                               \
@@ -96,12 +110,12 @@ static int SAFT_TEST_SUCCESS = 0 ;
  * @param op2 second operand used in test.
  * @param print printing function for `exp` and `test` variables.
  */
-#define SAFT_PRINT_SUCCESS(macro,op1,op2,print)                         \
+#define SAFT_PRINT_SUCCESS(macro,r,op1,op2,print)                       \
         do                                                              \
         {                                                               \
                 SAFT_PRINT_IN_COLOR(SAFT_COLOR_GREEN,"[OK] ") ;         \
                 SAFT_PRINT_FILE_LINE() ; printf(" ") ;                  \
-                SAFT_PRINT_MACRO_CALL(macro,op1,op2) ; printf ("\n") ;  \
+                SAFT_PRINT_MACRO_CALL(macro,r,op1,op2) ; printf ("\n") ; \
         }                                                               \
         while (0)
 
@@ -115,61 +129,71 @@ static int SAFT_TEST_SUCCESS = 0 ;
  * @param op2 first operand used in test.
  * @param print printing function for `typeof(op1)` values.
  */
-#define SAFT_MK_ASSERT(macro,cond,op1,op2,print)                        \
+#define SAFT_MK_ASSERT(macro,cond,r,op1,op2,print)                      \
         do                                                              \
         {                                                               \
-                SAFT_TEST_TOTAL++;                                      \
+                (r!=NULL) ?                                             \
+                        r->test_total++ :                               \
+                        saft_orphan.test_total++ ;                      \
                 if (cond)                                               \
                 {                                                       \
-                        SAFT_TEST_SUCCESS++;                            \
-                        SAFT_PRINT_SUCCESS(macro,op1,op2,print) ;       \
+                        (r!=NULL) ?                                     \
+                                r->test_success++ :                     \
+                                saft_orphan.test_success++ ;            \
+                        SAFT_PRINT_SUCCESS(macro,r,op1,op2,print) ;     \
                 }                                                       \
                 else                                                    \
                 {                                                       \
-                        SAFT_PRINT_FAILURE(macro,op1,op2,print) ;       \
+                        SAFT_PRINT_FAILURE(macro,r,op1,op2,print) ;     \
                 }                                                       \
         }                                                               \
         while (0)
 
 
-#define SAFT_ASSERT_EQ(op1,op2,print)           \
+#define SAFT_ASSERT_EQ(r,op1,op2,print)         \
                 SAFT_MK_ASSERT(SAFT_ASSERT_EQ,  \
                                ((op1)==(op2)),  \
+                               (r),             \
                                (op1),           \
                                (op2),           \
                                (print))
 
-#define SAFT_ASSERT_NEQ(op1,op2,print)          \
+#define SAFT_ASSERT_NEQ(r,op1,op2,print)        \
                 SAFT_MK_ASSERT(SAFT_ASSERT_NEQ, \
                                ((op1)!=(op2)),  \
+                               (r),             \
                                (op1),           \
                                (op2),           \
                                (print))
 
-#define SAFT_ASSERT_LT(op1,op2,print)           \
+#define SAFT_ASSERT_LT(r,op1,op2,print)         \
                 SAFT_MK_ASSERT(SAFT_ASSERT_LT,  \
                                ((op1)<(op2)),   \
+                               (r),             \
                                (op1),           \
                                (op2),           \
                                (print))
 
-#define SAFT_ASSERT_LTE(op1,op2,print)          \
+#define SAFT_ASSERT_LTE(r,op1,op2,print)        \
                 SAFT_MK_ASSERT(SAFT_ASSERT_LTE, \
                                ((op1)<=(op2)),  \
+                               (r),             \
                                (op1),           \
                                (op2),           \
                                (print))
 
-#define SAFT_ASSERT_GT(op1,op2,print)           \
+#define SAFT_ASSERT_GT(r,op1,op2,print)         \
                 SAFT_MK_ASSERT(SAFT_ASSERT_GT,  \
                                ((op1)>(op2)),   \
+                               (r),             \
                                (op1),           \
                                (op2),           \
                                (print))
 
-#define SAFT_ASSERT_GTE(op1,op2,print)          \
+#define SAFT_ASSERT_GTE(r,op1,op2,print)        \
                 SAFT_MK_ASSERT(SAFT_ASSERT_GTE, \
                                ((op1)>=(op2)),  \
+                               (r),             \
                                (op1),           \
                                (op2),           \
                                (print))
@@ -178,24 +202,24 @@ static int SAFT_TEST_SUCCESS = 0 ;
 /**
  * Print total number of tests and success ratio.
  */
-#define SAFT_PRINT_RESULTS()                                            \
+#define SAFT_PRINT_RESULTS(r)                                           \
                 do                                                      \
                 {                                                       \
-                        SAFT_PRINT_IN_COLOR(SAFT_COLOR_CYAN,            \
-                                            "[RESULTS]\n") ;            \
+                        SAFT_PRINT_IN_COLOR(SAFT_COLOR_CYAN, "[RESULTS] ") ; \
+                        printf ("%s\n", (r)->id);                       \
                         printf ("\t  Total: %d tests\n",                \
-                                SAFT_TEST_TOTAL);                       \
+                                (r)->test_total);                       \
                         printf ("\tSuccess: %d/%d (%d%%)\n",            \
-                                SAFT_TEST_SUCCESS,                      \
-                                SAFT_TEST_TOTAL,                        \
-                                (SAFT_TEST_SUCCESS * 100)               \
-                                / SAFT_TEST_TOTAL);                     \
+                                (r)->test_success,                      \
+                                (r)->test_total,                        \
+                                ((r)->test_success*100)                 \
+                                / (r)->test_total);                     \
                         printf ("\tFailure: %d/%d (%d%%)\n",            \
-                                SAFT_TEST_TOTAL-SAFT_TEST_SUCCESS,      \
-                                SAFT_TEST_TOTAL,                        \
-                                ((SAFT_TEST_TOTAL-SAFT_TEST_SUCCESS)    \
-                                 * 100)                                 \
-                                / SAFT_TEST_TOTAL);                     \
+                                (r)->test_total-(r)->test_success,      \
+                                (r)->test_total,                        \
+                                (((r)->test_total-(r)->test_success)    \
+                                 *100)                                  \
+                                / (r)->test_total);                     \
                 }                                                       \
                 while (0)
 

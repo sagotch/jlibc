@@ -39,7 +39,10 @@
 #define SAFT_COLOR_RESET ""
 #endif
 
-struct saft_test_results
+/**
+ * Structure used to record test suite informations.
+ */
+struct saft_test_suite
 {
         char * id ;
         unsigned int test_total ;
@@ -49,19 +52,43 @@ struct saft_test_results
 /*
  * Create a new `struct saft_test_result` with `name` as its `id`.
  */
-#define SAFT_NEW_SECTION(name) (struct saft_test_results) {(name),0,0}
+#define SAFT_NEW_SUITE(name) (struct saft_test_suite) {(name),0,0}
 
 /**
  * Test statistics with no section will be recorded in `saft_orphan`.
  */
-static struct saft_test_results saft_orphan = SAFT_NEW_SECTION ("") ;
+static struct saft_test_suite saft_orphans_suite =
+        SAFT_NEW_SUITE ("saft_orphans_suite") ;
+
+/**
+ * Test suite we are currently running.
+ */
+static struct saft_test_suite * current_suite = &saft_orphans_suite ;
+
+/**
+ * Set the current suite to `s`.
+ */
+#define SAFT_START_SUITE(s)                                             \
+        (SAFT_PRINT_IN_COLOR(SAFT_COLOR_CYAN, "[START]"),               \
+         printf(" %s\n", (s)->id),                                      \
+         current_suite = (s))
+
+/**
+ * Set the current suite to `saft_orphans_suite`.
+ */
+#define SAFT_STOP_SUITE()                                               \
+        (SAFT_PRINT_IN_COLOR(SAFT_COLOR_CYAN, "[STOP]"),                \
+         printf(" %s\n", current_suite->id),                            \
+         current_suite = &saft_orphans_suite)
 
 /**
  * Print [file:line number].
  */
 #define SAFT_PRINT_FILE_LINE() printf ("[%s:%d]", __FILE__, __LINE__)
 
-
+/**
+ * Print `msg` with color `c` and restore terminal color.
+ */
 #define SAFT_PRINT_IN_COLOR(c,msg) printf (c msg SAFT_COLOR_RESET)
 
 /**
@@ -71,8 +98,8 @@ static struct saft_test_results saft_orphan = SAFT_NEW_SECTION ("") ;
  * @param op2 second operand used in `macro`.
  * @param print printer used in `macro`
  */
-#define SAFT_PRINT_MACRO_CALL(macro,r,op1,op2)                  \
-        printf (#macro " ( " #r ", " #op1 ", " #op2" )")
+#define SAFT_PRINT_MACRO_CALL(macro,op1,op2)            \
+        printf (#macro " ( " #op1 ", " #op2" )")
 
 /**
  * @param var variable to print.
@@ -92,12 +119,12 @@ static struct saft_test_results saft_orphan = SAFT_NEW_SECTION ("") ;
  * @param op2 second operand used in test.
  * @param print printing function for `exp` and `test` variables.
  */
-#define SAFT_PRINT_FAILURE(macro,r,op1,op2,print)                       \
+#define SAFT_PRINT_FAILURE(macro,op1,op2,print)                         \
         do                                                              \
         {                                                               \
                 SAFT_PRINT_IN_COLOR(SAFT_COLOR_RED,"[FAIL] ") ;         \
                 SAFT_PRINT_FILE_LINE() ; printf(" ") ;                  \
-                SAFT_PRINT_MACRO_CALL(macro,r,op1,op2) ; printf ("\n") ; \
+                SAFT_PRINT_MACRO_CALL(macro,op1,op2) ; printf ("\n") ;  \
                 SAFT_PRINT_VAR(op1,print) ; printf ("\n") ;             \
                 SAFT_PRINT_VAR(op2,print) ; printf ("\n") ;             \
         }                                                               \
@@ -110,12 +137,12 @@ static struct saft_test_results saft_orphan = SAFT_NEW_SECTION ("") ;
  * @param op2 second operand used in test.
  * @param print printing function for `exp` and `test` variables.
  */
-#define SAFT_PRINT_SUCCESS(macro,r,op1,op2,print)                       \
+#define SAFT_PRINT_SUCCESS(macro,op1,op2,print)                         \
         do                                                              \
         {                                                               \
                 SAFT_PRINT_IN_COLOR(SAFT_COLOR_GREEN,"[OK] ") ;         \
                 SAFT_PRINT_FILE_LINE() ; printf(" ") ;                  \
-                SAFT_PRINT_MACRO_CALL(macro,r,op1,op2) ; printf ("\n") ; \
+                SAFT_PRINT_MACRO_CALL(macro,op1,op2) ; printf ("\n") ;  \
         }                                                               \
         while (0)
 
@@ -129,71 +156,61 @@ static struct saft_test_results saft_orphan = SAFT_NEW_SECTION ("") ;
  * @param op2 first operand used in test.
  * @param print printing function for `typeof(op1)` values.
  */
-#define SAFT_MK_ASSERT(macro,cond,r,op1,op2,print)                      \
+#define SAFT_MK_ASSERT(macro,cond,op1,op2,print)                        \
         do                                                              \
         {                                                               \
-                (r!=NULL) ?                                             \
-                        r->test_total++ :                               \
-                        saft_orphan.test_total++ ;                      \
+                current_suite->test_total++ ;                           \
                 if (cond)                                               \
                 {                                                       \
-                        (r!=NULL) ?                                     \
-                                r->test_success++ :                     \
-                                saft_orphan.test_success++ ;            \
-                        SAFT_PRINT_SUCCESS(macro,r,op1,op2,print) ;     \
+                        current_suite->test_success++ ;                 \
+                        SAFT_PRINT_SUCCESS(macro,op1,op2,print) ;       \
                 }                                                       \
                 else                                                    \
                 {                                                       \
-                        SAFT_PRINT_FAILURE(macro,r,op1,op2,print) ;     \
+                        SAFT_PRINT_FAILURE(macro,op1,op2,print) ;       \
                 }                                                       \
         }                                                               \
         while (0)
 
 
-#define SAFT_ASSERT_EQ(r,op1,op2,print)         \
+#define SAFT_ASSERT_EQ(op1,op2,print)           \
                 SAFT_MK_ASSERT(SAFT_ASSERT_EQ,  \
                                ((op1)==(op2)),  \
-                               (r),             \
                                (op1),           \
                                (op2),           \
                                (print))
 
-#define SAFT_ASSERT_NEQ(r,op1,op2,print)        \
+#define SAFT_ASSERT_NEQ(op1,op2,print)          \
                 SAFT_MK_ASSERT(SAFT_ASSERT_NEQ, \
                                ((op1)!=(op2)),  \
-                               (r),             \
                                (op1),           \
                                (op2),           \
                                (print))
 
-#define SAFT_ASSERT_LT(r,op1,op2,print)         \
+#define SAFT_ASSERT_LT(op1,op2,print)           \
                 SAFT_MK_ASSERT(SAFT_ASSERT_LT,  \
                                ((op1)<(op2)),   \
-                               (r),             \
                                (op1),           \
                                (op2),           \
                                (print))
 
-#define SAFT_ASSERT_LTE(r,op1,op2,print)        \
+#define SAFT_ASSERT_LTE(op1,op2,print)          \
                 SAFT_MK_ASSERT(SAFT_ASSERT_LTE, \
                                ((op1)<=(op2)),  \
-                               (r),             \
                                (op1),           \
                                (op2),           \
                                (print))
 
-#define SAFT_ASSERT_GT(r,op1,op2,print)         \
+#define SAFT_ASSERT_GT(op1,op2,print)         \
                 SAFT_MK_ASSERT(SAFT_ASSERT_GT,  \
                                ((op1)>(op2)),   \
-                               (r),             \
                                (op1),           \
                                (op2),           \
                                (print))
 
-#define SAFT_ASSERT_GTE(r,op1,op2,print)        \
+#define SAFT_ASSERT_GTE(op1,op2,print)          \
                 SAFT_MK_ASSERT(SAFT_ASSERT_GTE, \
                                ((op1)>=(op2)),  \
-                               (r),             \
                                (op1),           \
                                (op2),           \
                                (print))
@@ -205,7 +222,8 @@ static struct saft_test_results saft_orphan = SAFT_NEW_SECTION ("") ;
 #define SAFT_PRINT_RESULTS(r)                                           \
                 do                                                      \
                 {                                                       \
-                        SAFT_PRINT_IN_COLOR(SAFT_COLOR_CYAN, "[RESULTS] ") ; \
+                        SAFT_PRINT_IN_COLOR(SAFT_COLOR_CYAN,            \
+                                            "[RESULTS] ") ;             \
                         printf ("%s\n", (r)->id);                       \
                         printf ("\t  Total: %d tests\n",                \
                                 (r)->test_total);                       \

@@ -241,6 +241,12 @@ static struct saft_test_suite * current_suite = &saft_orphans_suite ;
                 }                                                       \
                 while (0)
 
+/*
+ * Test if every test in a suite `r` was a succes or not.
+ */
+#define SAFT_RETURN_CODE(r)                             \
+                ((r)->test_total == (r)->test_success)
+
 /**
  * Basic printers you do not want to rewrite each time.
  * The use of `static` prevent `multiple definition` errors.

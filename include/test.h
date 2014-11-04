@@ -26,18 +26,7 @@
 #define JLIBC_TEST_H 1
 
 #include <stdio.h>
-
-#ifdef JL_TEST_ENABLE_COLOR
-#define JL_TEST_COLOR_RED "\x1b[31m"
-#define JL_TEST_COLOR_GREEN "\x1b[32m"
-#define JL_TEST_COLOR_CYAN "\x1b[36m"
-#define JL_TEST_COLOR_RESET "\x1b[0m"
-#else
-#define JL_TEST_COLOR_RED ""
-#define JL_TEST_COLOR_GREEN ""
-#define JL_TEST_COLOR_CYAN ""
-#define JL_TEST_COLOR_RESET ""
-#endif
+#include "print.h"
 
 /**
  * Structure used to record test suite informations.
@@ -58,7 +47,7 @@ struct jl_test_test_suite
  * Test statistics with no section will be recorded in `jl_test_orphan`.
  */
 static struct jl_test_test_suite jl_test_orphans_suite =
-        JL_TEST_NEW_SUITE ("jl_test_orphans_suite") ;
+{"jl_test_orphans_suite", 0, 0} ;
 
 /**
  * Test suite we are currently running.
@@ -69,49 +58,26 @@ static struct jl_test_test_suite * current_suite = &jl_test_orphans_suite ;
  * Set the current suite to `s`.
  */
 #define JL_TEST_START_SUITE(s)                                  \
-        (JL_TEST_PRINT_IN_COLOR(JL_TEST_COLOR_CYAN, "[START]"), \
-         printf(" %s\n", (s)->id),                              \
-         current_suite = (s))
+        do                                                      \
+        {                                                       \
+         JL_PRINT_IN_COLOR(JL_PRINT_COLOR_CYAN,                 \
+                                   "[START] %s\n", (s)->id) ;   \
+         current_suite = (s);                                   \
+         }                                                      \
+        while (0)
 
 /**
  * Set the current suite to `jl_test_orphans_suite`.
  */
-#define JL_TEST_STOP_SUITE()                                    \
-        (JL_TEST_PRINT_IN_COLOR(JL_TEST_COLOR_CYAN, "[STOP]"),  \
-         printf(" %s\n", current_suite->id),                    \
-         current_suite = &jl_test_orphans_suite)
-
-/**
- * Print [file:line number].
- */
-#define JL_TEST_PRINT_FILE_LINE() printf ("[%s:%d]", __FILE__, __LINE__)
-
-/**
- * Print `msg` with color `c` and restore terminal color.
- */
-#define JL_TEST_PRINT_IN_COLOR(c,msg) printf (c msg JL_TEST_COLOR_RESET)
-
-/**
- * Print a macro call as it would be written in a C source file.
- * @param macro name of the macro called (as string).
- * @param op1 first operand used in `macro`.
- * @param op2 second operand used in `macro`.
- * @param print printer used in `macro`
- */
-#define JL_TEST_PRINT_MACRO_CALL(macro,op1,op2)         \
-        printf (#macro " ( " #op1 ", " #op2" )")
-
-/**
- * @param var variable to print.
- * @param print function to use to print `var`.
- */
-#define JL_TEST_PRINT_VAR(var,print)            \
-        do                                      \
-        {                                       \
-                printf ("\t" #var " = ") ;      \
-                print (var) ;                   \
-        }                                       \
+#define JL_TEST_STOP_SUITE()                                            \
+        do                                                              \
+        {                                                               \
+                JL_PRINT_IN_COLOR(JL_PRINT_COLOR_CYAN,                  \
+                                  "[STOP] \%s\n", current_suite->id) ;  \
+                current_suite = &jl_test_orphans_suite;                 \
+        }                                                               \
         while (0)
+
 /**
  * Print a failure message.
  * @param macro name of the macro called (as string).
@@ -122,11 +88,11 @@ static struct jl_test_test_suite * current_suite = &jl_test_orphans_suite ;
 #define JL_TEST_PRINT_FAILURE(macro,op1,op2,print)                      \
         do                                                              \
         {                                                               \
-                JL_TEST_PRINT_IN_COLOR(JL_TEST_COLOR_RED,"[FAIL] ") ;   \
-                JL_TEST_PRINT_FILE_LINE() ; printf(" ") ;               \
-                JL_TEST_PRINT_MACRO_CALL(macro,op1,op2) ; printf ("\n") ; \
-                JL_TEST_PRINT_VAR(op1,print) ; printf ("\n") ;          \
-                JL_TEST_PRINT_VAR(op2,print) ; printf ("\n") ;          \
+                JL_PRINT_IN_COLOR(JL_PRINT_COLOR_RED,                   \
+                                  "[FAIL] [" JL_PRINT_LOCATION "] ");   \
+                printf (#macro " ( " #op1 ", " #op2" )\n");             \
+                printf ("\t"); JL_PRINT_VAR(op1,print); printf ("\n");  \
+                printf ("\t"); JL_PRINT_VAR(op2,print); printf ("\n");  \
         }                                                               \
         while (0)
 
@@ -140,10 +106,10 @@ static struct jl_test_test_suite * current_suite = &jl_test_orphans_suite ;
 #define JL_TEST_PRINT_SUCCESS(macro,op1,op2,print)                      \
         do                                                              \
         {                                                               \
-         JL_TEST_PRINT_IN_COLOR(JL_TEST_COLOR_GREEN,"[OK] ") ;          \
-         JL_TEST_PRINT_FILE_LINE() ; printf(" ") ;                      \
-         JL_TEST_PRINT_MACRO_CALL(macro,op1,op2) ; printf ("\n") ;      \
-         }                                                              \
+                JL_PRINT_IN_COLOR(JL_PRINT_COLOR_GREEN,                 \
+                                  "[OK] [" JL_PRINT_LOCATION "] ") ;    \
+                printf (#macro " ( " #op1 ", " #op2" )\n") ;            \
+        }                                                               \
         while (0)
 
 /**
@@ -157,20 +123,20 @@ static struct jl_test_test_suite * current_suite = &jl_test_orphans_suite ;
  * @param print printing function for `typeof(op1)` values.
  */
 #define JL_TEST_MK_ASSERT(macro,cond,op1,op2,print)                     \
-        do                                                              \
-        {                                                               \
-                current_suite->test_total++ ;                           \
-                if (cond)                                               \
+                do                                                      \
                 {                                                       \
-                        current_suite->test_success++ ;                 \
-                        JL_TEST_PRINT_SUCCESS(macro,op1,op2,print) ;    \
+                 current_suite->test_total++ ;                          \
+                 if (cond)                                              \
+                 {                                                      \
+                         current_suite->test_success++ ;                \
+                         JL_TEST_PRINT_SUCCESS(macro,op1,op2,print) ;   \
+                 }                                                      \
+                 else                                                   \
+                 {                                                      \
+                         JL_TEST_PRINT_FAILURE(macro,op1,op2,print) ;   \
+                 }                                                      \
                 }                                                       \
-                else                                                    \
-                {                                                       \
-                        JL_TEST_PRINT_FAILURE(macro,op1,op2,print) ;    \
-                }                                                       \
-        }                                                               \
-        while (0)
+                while (0)
 
 
 #define JL_TEST_ASSERT_EQ(op1,op2,print)                \
@@ -194,58 +160,57 @@ static struct jl_test_test_suite * current_suite = &jl_test_orphans_suite ;
                                   (op2),                \
                                   (print))
 
-#define JL_TEST_ASSERT_LTE(op1,op2,print)               \
-                JL_TEST_MK_ASSERT(JL_TEST_ASSERT_LTE,   \
-                                  ((op1)<=(op2)),       \
-                                  (op1),                \
-                                  (op2),                \
-                                  (print))
+#define JL_TEST_ASSERT_LTE(op1,op2,print)                       \
+                        JL_TEST_MK_ASSERT(JL_TEST_ASSERT_LTE,   \
+                                          ((op1)<=(op2)),       \
+                                          (op1),                \
+                                          (op2),                \
+                                          (print))
 
-#define JL_TEST_ASSERT_GT(op1,op2,print)                \
-                JL_TEST_MK_ASSERT(JL_TEST_ASSERT_GT,    \
-                                  ((op1)>(op2)),        \
-                                  (op1),                \
-                                  (op2),                \
-                                  (print))
+#define JL_TEST_ASSERT_GT(op1,op2,print)                        \
+                        JL_TEST_MK_ASSERT(JL_TEST_ASSERT_GT,    \
+                                          ((op1)>(op2)),        \
+                                          (op1),                \
+                                          (op2),                \
+                                          (print))
 
-#define JL_TEST_ASSERT_GTE(op1,op2,print)               \
-                JL_TEST_MK_ASSERT(JL_TEST_ASSERT_GTE,   \
-                                  ((op1)>=(op2)),       \
-                                  (op1),                \
-                                  (op2),                \
-                                  (print))
+#define JL_TEST_ASSERT_GTE(op1,op2,print)                       \
+                        JL_TEST_MK_ASSERT(JL_TEST_ASSERT_GTE,   \
+                                          ((op1)>=(op2)),       \
+                                          (op1),                \
+                                          (op2),                \
+                                          (print))
 
 
 /**
  * Print total number of tests and success ratio.
  */
-#define JL_TEST_PRINT_RESULTS(r)                                        \
-                do                                                      \
-                {                                                       \
-                        JL_TEST_PRINT_IN_COLOR(JL_TEST_COLOR_CYAN,      \
-                                               "[RESULTS] ") ;          \
-                        printf ("%s\n", (r)->id);                       \
-                        printf ("\t  Total: %d tests\n",                \
-                                (r)->test_total);                       \
-                        printf ("\tSuccess: %d/%d (%d%%)\n",            \
-                                (r)->test_success,                      \
-                                (r)->test_total,                        \
-                                ((r)->test_success*100)                 \
-                                / (r)->test_total);                     \
-                        printf ("\tFailure: %d/%d (%d%%)\n",            \
-                                (r)->test_total-(r)->test_success,      \
-                                (r)->test_total,                        \
-                                (((r)->test_total-(r)->test_success)    \
-                                 *100)                                  \
-                                / (r)->test_total);                     \
-                }                                                       \
-                while (0)
+#define JL_TEST_PRINT_RESULTS(r)                                \
+        do                                                      \
+        {                                                       \
+                JL_PRINT_IN_COLOR(JL_PRINT_COLOR_CYAN,          \
+                                  "[RESULTS] %s\n", (r)->id) ;  \
+                printf ("\t  Total: %d tests\n",                \
+                        (r)->test_total);                       \
+                printf ("\tSuccess: %d/%d (%d%%)\n",            \
+                        (r)->test_success,                      \
+                        (r)->test_total,                        \
+                        ((r)->test_success*100)                 \
+                        / (r)->test_total);                     \
+                printf ("\tFailure: %d/%d (%d%%)\n",            \
+                        (r)->test_total-(r)->test_success,      \
+                        (r)->test_total,                        \
+                        (((r)->test_total-(r)->test_success)    \
+                         *100)                                  \
+                        / (r)->test_total);                     \
+        }                                                       \
+        while (0)
 
 /*
  * Test if every test in a suite `r` was a succes or not.
  */
-#define JL_TEST_RETURN_CODE(r)                          \
-                ((r)->test_total == (r)->test_success)
+#define JL_TEST_RETURN_CODE(r)                                  \
+                        ((r)->test_total == (r)->test_success)
 
 /**
  * Basic printers you do not want to rewrite each time.

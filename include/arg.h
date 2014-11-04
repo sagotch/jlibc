@@ -141,13 +141,9 @@ static int jlibc_arg_parse_args (int ac, char ** av,
  * of the number of options in optv.
  */
 #define JLIBC_ARG_PARSE_ARG(argc,argv,optv,nc,nv)                       \
-        do                                                              \
-        {                                                               \
-                jlibc_arg_parse_args ((argc), (argv),                   \
-                                      sizeof(optv)/sizeof(*(optv)),     \
-                                      &(optv),(nc),(nv));               \
-        }                                                               \
-        while (0)
+        jlibc_arg_parse_args ((argc), (argv),                           \
+                              sizeof(optv)/sizeof(*(optv)),             \
+                              &(optv),(nc),(nv))
 
 #ifdef JLIBC_ARG_NO_PREFIX
 #define LONGLONG   JLIBC_ARG_LONGLONG

@@ -1,6 +1,3 @@
-#ifndef SAFAP_H
-#define SAFAP_H 1
-
 /*
   The MIT License (MIT)
 
@@ -25,28 +22,31 @@
   THE SOFTWARE.
 */
 
+#ifndef JLIBC_ARG_H
+#define JLIBC_ARG_H 1
+
 #include <stdlib.h>
 #include <string.h>
 
 /**
- * `struct safap_opt` need to be tagged with one of the followings.
+ * `struct jl_arg_opt` need to be tagged with one of the followings.
  */
-enum safap_opt_t {
-        SAFAP_LONGLONG, // associate with (long long *)
-        SAFAP_STRING,   // associate with (char **)
-        SAFAP_FLAG      // associate with (char *)
+enum jl_arg_opt_t {
+        JL_ARG_LONGLONG, // associate with (long long *)
+        JL_ARG_STRING,   // associate with (char **)
+        JL_ARG_FLAG      // associate with (char *)
 } ;
 
 /**
  * Structure representing an option,
  * @field name string that argument must match.
- * @field type `enum safap_opt_t` tag to indicate how to handle the argument.
+ * @field type `enum jl_arg_opt_t` tag to indicate how to handle the argument.
  * @field val void pointer which will be set according to `type`.
  */
-struct safap_opt {
-        char * name ;           // e.g. "--foo"
-        enum safap_opt_t type ; // expected type
-        void * val ;            // pointer which will receive arg value
+struct jl_arg_opt {
+        char * name ;            // e.g. "--foo"
+        enum jl_arg_opt_t type ; // expected type
+        void * val ;             // pointer which will receive arg value
 } ;
 
 /**
@@ -61,9 +61,9 @@ struct safap_opt {
  * @param ov array of options you are looking for setting.
  * @param nc pointer to int which will reveive.
  */
-static int safap_parse_args (int ac, char ** av,
-                             int oc, struct safap_opt (* ov) [],
-                             int * nc, char *** nv)
+static int jl_arg_parse_args (int ac, char ** av,
+                              int oc, struct jl_arg_opt (* ov) [],
+                              int * nc, char *** nv)
 {
         int ai = 0 ; // current index in av
         while (ai < ac)
@@ -83,7 +83,7 @@ static int safap_parse_args (int ac, char ** av,
                         switch ((* ov)[oi].type)
                         {
 
-                        case SAFAP_LONGLONG:
+                        case JL_ARG_LONGLONG:
                                 if (ai > ac - 2)
                                 {
                                         return -1 ;
@@ -93,7 +93,7 @@ static int safap_parse_args (int ac, char ** av,
                                 ai += 2;
                                 break;
 
-                        case SAFAP_STRING:
+                        case JL_ARG_STRING:
                                 if (ai > ac - 2)
                                 {
                                         return -1 ;
@@ -103,7 +103,7 @@ static int safap_parse_args (int ac, char ** av,
                                 ai += 2;
                                 break;
 
-                        case SAFAP_FLAG:
+                        case JL_ARG_FLAG:
                                 * (char *) (* ov) [oi] . val = 1;
                                 ai += 1;
                                 break;
@@ -137,16 +137,16 @@ static int safap_parse_args (int ac, char ** av,
 }
 
 /**
- * This macro allows to use `safap_parse_args` with automatic computing
+ * This macro allows to use `jl_arg_parse_args` with automatic computing
  * of the number of options in optv.
  */
-#define SAFAP_PARSE_ARG(argc,argv,optv,nc,nv)                   \
-        do                                                      \
-        {                                                       \
-                safap_parse_args ((argc), (argv),               \
-                                  sizeof(optv)/sizeof(*(optv)), \
-                                  &(optv),(nc),(nv));           \
-        }                                                       \
+#define JL_ARG_PARSE_ARG(argc,argv,optv,nc,nv)                          \
+        do                                                              \
+        {                                                               \
+                jl_arg_parse_args ((argc), (argv),                      \
+                                   sizeof(optv)/sizeof(*(optv)),        \
+                                   &(optv),(nc),(nv));                  \
+        }                                                               \
         while (0)
 
-#endif // #ifndef SAFAP_H
+#endif // #ifndef JLIBC_ARG_H

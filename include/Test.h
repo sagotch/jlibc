@@ -22,27 +22,27 @@
   SOFTWARE.
 */
 
-#ifndef SAFT_H
-#define SAFT_H 1
+#ifndef JLIBC_TEST_H
+#define JLIBC_TEST_H 1
 
 #include <stdio.h>
 
-#ifdef SAFT_ENABLE_COLOR
-#define SAFT_COLOR_RED "\x1b[31m"
-#define SAFT_COLOR_GREEN "\x1b[32m"
-#define SAFT_COLOR_CYAN "\x1b[36m"
-#define SAFT_COLOR_RESET "\x1b[0m"
+#ifdef JL_TEST_ENABLE_COLOR
+#define JL_TEST_COLOR_RED "\x1b[31m"
+#define JL_TEST_COLOR_GREEN "\x1b[32m"
+#define JL_TEST_COLOR_CYAN "\x1b[36m"
+#define JL_TEST_COLOR_RESET "\x1b[0m"
 #else
-#define SAFT_COLOR_RED ""
-#define SAFT_COLOR_GREEN ""
-#define SAFT_COLOR_CYAN ""
-#define SAFT_COLOR_RESET ""
+#define JL_TEST_COLOR_RED ""
+#define JL_TEST_COLOR_GREEN ""
+#define JL_TEST_COLOR_CYAN ""
+#define JL_TEST_COLOR_RESET ""
 #endif
 
 /**
  * Structure used to record test suite informations.
  */
-struct saft_test_suite
+struct jl_test_test_suite
 {
         char * id ;
         unsigned int test_total ;
@@ -50,46 +50,46 @@ struct saft_test_suite
 } ;
 
 /*
- * Create a new `struct saft_test_result` with `name` as its `id`.
+ * Create a new `struct jl_test_test_result` with `name` as its `id`.
  */
-#define SAFT_NEW_SUITE(name) (struct saft_test_suite) {(name),0,0}
+#define JL_TEST_NEW_SUITE(name) (struct jl_test_test_suite) {(name),0,0}
 
 /**
- * Test statistics with no section will be recorded in `saft_orphan`.
+ * Test statistics with no section will be recorded in `jl_test_orphan`.
  */
-static struct saft_test_suite saft_orphans_suite =
-        SAFT_NEW_SUITE ("saft_orphans_suite") ;
+static struct jl_test_test_suite jl_test_orphans_suite =
+        JL_TEST_NEW_SUITE ("jl_test_orphans_suite") ;
 
 /**
  * Test suite we are currently running.
  */
-static struct saft_test_suite * current_suite = &saft_orphans_suite ;
+static struct jl_test_test_suite * current_suite = &jl_test_orphans_suite ;
 
 /**
  * Set the current suite to `s`.
  */
-#define SAFT_START_SUITE(s)                                             \
-        (SAFT_PRINT_IN_COLOR(SAFT_COLOR_CYAN, "[START]"),               \
-         printf(" %s\n", (s)->id),                                      \
+#define JL_TEST_START_SUITE(s)                                  \
+        (JL_TEST_PRINT_IN_COLOR(JL_TEST_COLOR_CYAN, "[START]"), \
+         printf(" %s\n", (s)->id),                              \
          current_suite = (s))
 
 /**
- * Set the current suite to `saft_orphans_suite`.
+ * Set the current suite to `jl_test_orphans_suite`.
  */
-#define SAFT_STOP_SUITE()                                               \
-        (SAFT_PRINT_IN_COLOR(SAFT_COLOR_CYAN, "[STOP]"),                \
-         printf(" %s\n", current_suite->id),                            \
-         current_suite = &saft_orphans_suite)
+#define JL_TEST_STOP_SUITE()                                    \
+        (JL_TEST_PRINT_IN_COLOR(JL_TEST_COLOR_CYAN, "[STOP]"),  \
+         printf(" %s\n", current_suite->id),                    \
+         current_suite = &jl_test_orphans_suite)
 
 /**
  * Print [file:line number].
  */
-#define SAFT_PRINT_FILE_LINE() printf ("[%s:%d]", __FILE__, __LINE__)
+#define JL_TEST_PRINT_FILE_LINE() printf ("[%s:%d]", __FILE__, __LINE__)
 
 /**
  * Print `msg` with color `c` and restore terminal color.
  */
-#define SAFT_PRINT_IN_COLOR(c,msg) printf (c msg SAFT_COLOR_RESET)
+#define JL_TEST_PRINT_IN_COLOR(c,msg) printf (c msg JL_TEST_COLOR_RESET)
 
 /**
  * Print a macro call as it would be written in a C source file.
@@ -98,14 +98,14 @@ static struct saft_test_suite * current_suite = &saft_orphans_suite ;
  * @param op2 second operand used in `macro`.
  * @param print printer used in `macro`
  */
-#define SAFT_PRINT_MACRO_CALL(macro,op1,op2)            \
+#define JL_TEST_PRINT_MACRO_CALL(macro,op1,op2)         \
         printf (#macro " ( " #op1 ", " #op2" )")
 
 /**
  * @param var variable to print.
  * @param print function to use to print `var`.
  */
-#define SAFT_PRINT_VAR(var,print)               \
+#define JL_TEST_PRINT_VAR(var,print)            \
         do                                      \
         {                                       \
                 printf ("\t" #var " = ") ;      \
@@ -119,14 +119,14 @@ static struct saft_test_suite * current_suite = &saft_orphans_suite ;
  * @param op2 second operand used in test.
  * @param print printing function for `exp` and `test` variables.
  */
-#define SAFT_PRINT_FAILURE(macro,op1,op2,print)                         \
+#define JL_TEST_PRINT_FAILURE(macro,op1,op2,print)                      \
         do                                                              \
         {                                                               \
-                SAFT_PRINT_IN_COLOR(SAFT_COLOR_RED,"[FAIL] ") ;         \
-                SAFT_PRINT_FILE_LINE() ; printf(" ") ;                  \
-                SAFT_PRINT_MACRO_CALL(macro,op1,op2) ; printf ("\n") ;  \
-                SAFT_PRINT_VAR(op1,print) ; printf ("\n") ;             \
-                SAFT_PRINT_VAR(op2,print) ; printf ("\n") ;             \
+                JL_TEST_PRINT_IN_COLOR(JL_TEST_COLOR_RED,"[FAIL] ") ;   \
+                JL_TEST_PRINT_FILE_LINE() ; printf(" ") ;               \
+                JL_TEST_PRINT_MACRO_CALL(macro,op1,op2) ; printf ("\n") ; \
+                JL_TEST_PRINT_VAR(op1,print) ; printf ("\n") ;          \
+                JL_TEST_PRINT_VAR(op2,print) ; printf ("\n") ;          \
         }                                                               \
         while (0)
 
@@ -137,13 +137,13 @@ static struct saft_test_suite * current_suite = &saft_orphans_suite ;
  * @param op2 second operand used in test.
  * @param print printing function for `exp` and `test` variables.
  */
-#define SAFT_PRINT_SUCCESS(macro,op1,op2,print)                         \
+#define JL_TEST_PRINT_SUCCESS(macro,op1,op2,print)                      \
         do                                                              \
         {                                                               \
-                SAFT_PRINT_IN_COLOR(SAFT_COLOR_GREEN,"[OK] ") ;         \
-                SAFT_PRINT_FILE_LINE() ; printf(" ") ;                  \
-                SAFT_PRINT_MACRO_CALL(macro,op1,op2) ; printf ("\n") ;  \
-        }                                                               \
+         JL_TEST_PRINT_IN_COLOR(JL_TEST_COLOR_GREEN,"[OK] ") ;          \
+         JL_TEST_PRINT_FILE_LINE() ; printf(" ") ;                      \
+         JL_TEST_PRINT_MACRO_CALL(macro,op1,op2) ; printf ("\n") ;      \
+         }                                                              \
         while (0)
 
 /**
@@ -156,74 +156,74 @@ static struct saft_test_suite * current_suite = &saft_orphans_suite ;
  * @param op2 first operand used in test.
  * @param print printing function for `typeof(op1)` values.
  */
-#define SAFT_MK_ASSERT(macro,cond,op1,op2,print)                        \
+#define JL_TEST_MK_ASSERT(macro,cond,op1,op2,print)                     \
         do                                                              \
         {                                                               \
                 current_suite->test_total++ ;                           \
                 if (cond)                                               \
                 {                                                       \
                         current_suite->test_success++ ;                 \
-                        SAFT_PRINT_SUCCESS(macro,op1,op2,print) ;       \
+                        JL_TEST_PRINT_SUCCESS(macro,op1,op2,print) ;    \
                 }                                                       \
                 else                                                    \
                 {                                                       \
-                        SAFT_PRINT_FAILURE(macro,op1,op2,print) ;       \
+                        JL_TEST_PRINT_FAILURE(macro,op1,op2,print) ;    \
                 }                                                       \
         }                                                               \
         while (0)
 
 
-#define SAFT_ASSERT_EQ(op1,op2,print)           \
-                SAFT_MK_ASSERT(SAFT_ASSERT_EQ,  \
-                               ((op1)==(op2)),  \
-                               (op1),           \
-                               (op2),           \
-                               (print))
+#define JL_TEST_ASSERT_EQ(op1,op2,print)                \
+                JL_TEST_MK_ASSERT(JL_TEST_ASSERT_EQ,    \
+                                  ((op1)==(op2)),       \
+                                  (op1),                \
+                                  (op2),                \
+                                  (print))
 
-#define SAFT_ASSERT_NEQ(op1,op2,print)          \
-                SAFT_MK_ASSERT(SAFT_ASSERT_NEQ, \
-                               ((op1)!=(op2)),  \
-                               (op1),           \
-                               (op2),           \
-                               (print))
+#define JL_TEST_ASSERT_NEQ(op1,op2,print)               \
+                JL_TEST_MK_ASSERT(JL_TEST_ASSERT_NEQ,   \
+                                  ((op1)!=(op2)),       \
+                                  (op1),                \
+                                  (op2),                \
+                                  (print))
 
-#define SAFT_ASSERT_LT(op1,op2,print)           \
-                SAFT_MK_ASSERT(SAFT_ASSERT_LT,  \
-                               ((op1)<(op2)),   \
-                               (op1),           \
-                               (op2),           \
-                               (print))
+#define JL_TEST_ASSERT_LT(op1,op2,print)                \
+                JL_TEST_MK_ASSERT(JL_TEST_ASSERT_LT,    \
+                                  ((op1)<(op2)),        \
+                                  (op1),                \
+                                  (op2),                \
+                                  (print))
 
-#define SAFT_ASSERT_LTE(op1,op2,print)          \
-                SAFT_MK_ASSERT(SAFT_ASSERT_LTE, \
-                               ((op1)<=(op2)),  \
-                               (op1),           \
-                               (op2),           \
-                               (print))
+#define JL_TEST_ASSERT_LTE(op1,op2,print)               \
+                JL_TEST_MK_ASSERT(JL_TEST_ASSERT_LTE,   \
+                                  ((op1)<=(op2)),       \
+                                  (op1),                \
+                                  (op2),                \
+                                  (print))
 
-#define SAFT_ASSERT_GT(op1,op2,print)         \
-                SAFT_MK_ASSERT(SAFT_ASSERT_GT,  \
-                               ((op1)>(op2)),   \
-                               (op1),           \
-                               (op2),           \
-                               (print))
+#define JL_TEST_ASSERT_GT(op1,op2,print)                \
+                JL_TEST_MK_ASSERT(JL_TEST_ASSERT_GT,    \
+                                  ((op1)>(op2)),        \
+                                  (op1),                \
+                                  (op2),                \
+                                  (print))
 
-#define SAFT_ASSERT_GTE(op1,op2,print)          \
-                SAFT_MK_ASSERT(SAFT_ASSERT_GTE, \
-                               ((op1)>=(op2)),  \
-                               (op1),           \
-                               (op2),           \
-                               (print))
+#define JL_TEST_ASSERT_GTE(op1,op2,print)               \
+                JL_TEST_MK_ASSERT(JL_TEST_ASSERT_GTE,   \
+                                  ((op1)>=(op2)),       \
+                                  (op1),                \
+                                  (op2),                \
+                                  (print))
 
 
 /**
  * Print total number of tests and success ratio.
  */
-#define SAFT_PRINT_RESULTS(r)                                           \
+#define JL_TEST_PRINT_RESULTS(r)                                        \
                 do                                                      \
                 {                                                       \
-                        SAFT_PRINT_IN_COLOR(SAFT_COLOR_CYAN,            \
-                                            "[RESULTS] ") ;             \
+                        JL_TEST_PRINT_IN_COLOR(JL_TEST_COLOR_CYAN,      \
+                                               "[RESULTS] ") ;          \
                         printf ("%s\n", (r)->id);                       \
                         printf ("\t  Total: %d tests\n",                \
                                 (r)->test_total);                       \
@@ -244,16 +244,16 @@ static struct saft_test_suite * current_suite = &saft_orphans_suite ;
 /*
  * Test if every test in a suite `r` was a succes or not.
  */
-#define SAFT_RETURN_CODE(r)                             \
+#define JL_TEST_RETURN_CODE(r)                          \
                 ((r)->test_total == (r)->test_success)
 
 /**
  * Basic printers you do not want to rewrite each time.
  * The use of `static` prevent `multiple definition` errors.
  */
-static void saft_print_int (int d) { printf ("%d", d) ; }
-static void saft_print_uint (unsigned int u) { printf ("%u", u) ; }
-static void saft_print_float (float f) { printf ("%f", f) ; }
-static void saft_print_string (char * s) { printf ("%s", s) ; }
+static void jl_test_print_int (int d) { printf ("%d", d) ; }
+static void jl_test_print_uint (unsigned int u) { printf ("%u", u) ; }
+static void jl_test_print_float (float f) { printf ("%f", f) ; }
+static void jl_test_print_string (char * s) { printf ("%s", s) ; }
 
-#endif
+#endif // #ifndef JLIBC_TEST_H

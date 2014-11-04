@@ -25,41 +25,51 @@
 #ifndef JLIBC_PRINT_H
 #define JLIBC_PRINT_H 1
 
-#ifdef JL_PRINT_ENABLE_COLOR
-#define JL_PRINT_COLOR_RED "\x1b[31m"
-#define JL_PRINT_COLOR_GREEN "\x1b[32m"
-#define JL_PRINT_COLOR_CYAN "\x1b[36m"
-#define JL_PRINT_COLOR_RESET "\x1b[0m"
+#ifdef JLIBC_PRINT_ENABLE_COLOR
+#define JLIBC_PRINT_COLOR_RED "\x1b[31m"
+#define JLIBC_PRINT_COLOR_GREEN "\x1b[32m"
+#define JLIBC_PRINT_COLOR_CYAN "\x1b[36m"
+#define JLIBC_PRINT_COLOR_RESET "\x1b[0m"
 #else
-#define JL_PRINT_COLOR_RED ""
-#define JL_PRINT_COLOR_GREEN ""
-#define JL_PRINT_COLOR_CYAN ""
-#define JL_PRINT_COLOR_RESET ""
+#define JLIBC_PRINT_COLOR_RED ""
+#define JLIBC_PRINT_COLOR_GREEN ""
+#define JLIBC_PRINT_COLOR_CYAN ""
+#define JLIBC_PRINT_COLOR_RESET ""
 #endif
 
-#define JL_PRINT_STRINGIFY(x) #x
-#define JL_PRINT_TOSTRING(x) JL_PRINT_STRINGIFY(x)
-#define JL_PRINT_LOCATION __FILE__ ":" JL_PRINT_TOSTRING(__LINE__)
+#define JLIBC_PRINT_STRINGIFY(x) #x
+#define JLIBC_PRINT_TOSTRING(x) JLIBC_PRINT_STRINGIFY(x)
+#define JLIBC_PRINT_LOCATION __FILE__ ":" JLIBC_PRINT_TOSTRING(__LINE__)
 
 /**
  * Print `msg` with color `c` and restore terminal color.
  * `msg` is a
  * Note: This is supposed to work with gcc compiler and --std=c99 option.
  */
-#define JL_PRINT_IN_COLOR(c,msg,...)                            \
-        printf (c msg JL_PRINT_COLOR_RESET, ##__VA_ARGS__)
+#define JLIBC_PRINT_PRINT_IN_COLOR(c,msg,...)                   \
+        printf (c msg JLIBC_PRINT_COLOR_RESET, ##__VA_ARGS__)
 
 /**
  * Print var value, e.g. `x = 1`.
  * @param var variable to print.
  * @param print function to use to print `var`.
  */
-#define JL_PRINT_VAR(var,print,...)             \
+#define JLIBC_PRINT_PRINT_VAR(var,print,...)    \
         do                                      \
         {                                       \
                 printf (#var " = ") ;           \
                 print (var) ;                   \
         }                                       \
         while (0)
+
+#ifdef JLIBC_PRINT_NO_PREFIX
+#define COLOR_RED      JLIBC_PRINT_COLOR_RED
+#define COLOR_GREEN    JLIBC_PRINT_COLOR_GREEN
+#define COLOR_CYAN     JLIBC_PRINT_COLOR_CYAN
+#define COLOR_RESET    JLIBC_PRINT_COLOR_RESET
+#define LOCATION       JLIBC_PRINT_LOCATION
+#define PRINT_IN_COLOR JLIBC_PRINT_PRINT_IN_COLOR
+#define PRINT_VAR      JLIBC_PRINT_PRINT_VAR
+#endif
 
 #endif

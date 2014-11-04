@@ -29,24 +29,24 @@
 #include <string.h>
 
 /**
- * `struct jl_arg_opt` need to be tagged with one of the followings.
+ * `struct jlibc_arg_opt` need to be tagged with one of the followings.
  */
-enum jl_arg_opt_t {
-        JL_ARG_LONGLONG, // associate with (long long *)
-        JL_ARG_STRING,   // associate with (char **)
-        JL_ARG_FLAG      // associate with (char *)
+enum jlibc_arg_opt_t {
+        JLIBC_ARG_LONGLONG, // associate with (long long *)
+        JLIBC_ARG_STRING,   // associate with (char **)
+        JLIBC_ARG_FLAG      // associate with (char *)
 } ;
 
 /**
  * Structure representing an option,
  * @field name string that argument must match.
- * @field type `enum jl_arg_opt_t` tag to indicate how to handle the argument.
+ * @field type `enum jlibc_arg_opt_t` tag to indicate how to handle the argument.
  * @field val void pointer which will be set according to `type`.
  */
-struct jl_arg_opt {
-        char * name ;            // e.g. "--foo"
-        enum jl_arg_opt_t type ; // expected type
-        void * val ;             // pointer which will receive arg value
+struct jlibc_arg_opt {
+        char * name ;               // e.g. "--foo"
+        enum jlibc_arg_opt_t type ; // expected type
+        void * val ;                // pointer which will receive arg value
 } ;
 
 /**
@@ -61,9 +61,9 @@ struct jl_arg_opt {
  * @param ov array of options you are looking for setting.
  * @param nc pointer to int which will reveive.
  */
-static int jl_arg_parse_args (int ac, char ** av,
-                              int oc, struct jl_arg_opt (* ov) [],
-                              int * nc, char *** nv)
+static int jlibc_arg_parse_args (int ac, char ** av,
+                                 int oc, struct jlibc_arg_opt (* ov) [],
+                                 int * nc, char *** nv)
 {
         int ai = 0 ; // current index in av
         while (ai < ac)
@@ -83,7 +83,7 @@ static int jl_arg_parse_args (int ac, char ** av,
                         switch ((* ov)[oi].type)
                         {
 
-                        case JL_ARG_LONGLONG:
+                        case JLIBC_ARG_LONGLONG:
                                 if (ai > ac - 2)
                                 {
                                         return -1 ;
@@ -93,7 +93,7 @@ static int jl_arg_parse_args (int ac, char ** av,
                                 ai += 2;
                                 break;
 
-                        case JL_ARG_STRING:
+                        case JLIBC_ARG_STRING:
                                 if (ai > ac - 2)
                                 {
                                         return -1 ;
@@ -103,7 +103,7 @@ static int jl_arg_parse_args (int ac, char ** av,
                                 ai += 2;
                                 break;
 
-                        case JL_ARG_FLAG:
+                        case JLIBC_ARG_FLAG:
                                 * (char *) (* ov) [oi] . val = 1;
                                 ai += 1;
                                 break;
@@ -137,16 +137,23 @@ static int jl_arg_parse_args (int ac, char ** av,
 }
 
 /**
- * This macro allows to use `jl_arg_parse_args` with automatic computing
+ * This macro allows to use `jlibc_arg_parse_args` with automatic computing
  * of the number of options in optv.
  */
-#define JL_ARG_PARSE_ARG(argc,argv,optv,nc,nv)                          \
+#define JLIBC_ARG_PARSE_ARG(argc,argv,optv,nc,nv)                       \
         do                                                              \
         {                                                               \
-                jl_arg_parse_args ((argc), (argv),                      \
-                                   sizeof(optv)/sizeof(*(optv)),        \
-                                   &(optv),(nc),(nv));                  \
+                jlibc_arg_parse_args ((argc), (argv),                   \
+                                      sizeof(optv)/sizeof(*(optv)),     \
+                                      &(optv),(nc),(nv));               \
         }                                                               \
         while (0)
+
+#ifdef JLIBC_ARG_NO_PREFIX
+#define LONGLONG   JLIBC_ARG_LONGLONG
+#define STRING     JLIBC_ARG_STRING
+#define FLAG       JLIBC_ARG_FLAG
+#define PARSE_ARG  JLIBC_ARG_PARSE_ARG
+#endif
 
 #endif // #ifndef JLIBC_ARG_H

@@ -79,6 +79,8 @@ static void jlibc_print_print_uint (unsigned int u) { printf ("%u", u) ; }
 static void jlibc_print_print_float (float f) { printf ("%f", f) ; }
 static void jlibc_print_print_string (char * s) { printf ("%s", s) ; }
 
+#endif
+
 #ifdef JLIBC_PRINT_NO_PREFIX
 #define COLOR_RED      JLIBC_PRINT_COLOR_RED
 #define COLOR_GREEN    JLIBC_PRINT_COLOR_GREEN
@@ -94,6 +96,4 @@ static void jlibc_print_print_string (char * s) { printf ("%s", s) ; }
 #define print_uint     jlibc_print_print_uint
 #define print_float    jlibc_print_print_float
 #define print_string   jlibc_print_print_string
-#endif
-
 #endif

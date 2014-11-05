@@ -145,11 +145,11 @@ static int jlibc_arg_parse_args (int ac, char ** av,
                               sizeof(optv)/sizeof(*(optv)),             \
                               &(optv),(nc),(nv))
 
+#endif // #ifndef JLIBC_ARG_H
+
 #ifdef JLIBC_ARG_NO_PREFIX
 #define LONGLONG   JLIBC_ARG_LONGLONG
 #define STRING     JLIBC_ARG_STRING
 #define FLAG       JLIBC_ARG_FLAG
 #define PARSE_ARG  JLIBC_ARG_PARSE_ARG
 #endif
-
-#endif // #ifndef JLIBC_ARG_H

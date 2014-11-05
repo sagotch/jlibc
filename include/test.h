@@ -217,6 +217,8 @@ static struct jlibc_test_suite * jlibc_test_current = &jlibc_test_orphans ;
  */
 #define JLIBC_TEST_RETURN_CODE(r) ((r)->test_total == (r)->test_success)
 
+#endif // #ifndef JLIBC_TEST_H
+
 #ifdef JLBIC_TEST_NO_PREFIX
 #define NEW_SUITE     JLIBC_TEST_NEW_SUITE
 #define START_SUITE   JLIBC_TEST_START_SUITE
@@ -230,5 +232,3 @@ static struct jlibc_test_suite * jlibc_test_current = &jlibc_test_orphans ;
 #define ASSERT_GT     JLIBC_TEST_ASSERT_GT
 #define ASSERT_GTE    JLIBC_TEST_ASSERT_GTE
 #endif
-
-#endif // #ifndef JLIBC_TEST_H

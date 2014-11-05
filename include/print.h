@@ -74,10 +74,10 @@
  * Basic printers you do not want to rewrite each time.
  * The use of `static` prevent `multiple definition` errors.
  */
-static void jlibc_print_print_int (int d) { printf ("%d", d) ; }
-static void jlibc_print_print_uint (unsigned int u) { printf ("%u", u) ; }
-static void jlibc_print_print_float (float f) { printf ("%f", f) ; }
-static void jlibc_print_print_string (char * s) { printf ("%s", s) ; }
+static inline void jlibc_print_print_int (int d) { printf ("%d", d); }
+static inline void jlibc_print_print_uint (unsigned int u) { printf ("%u", u); }
+static inline void jlibc_print_print_float (float f) { printf ("%f", f); }
+static inline void jlibc_print_print_string (char * s) { printf ("%s", s); }
 
 #endif
 

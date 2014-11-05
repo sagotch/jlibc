@@ -30,15 +30,6 @@ print these operands.
 * `ASSERT_GT`: test using `>` operator.
 * `ASSERT_GTE`: test using `>=` operator.
 
-### Predefined printing functions
-
-Some printing functions for common types are provided.
-
-* `saft_print_int`
-* `saft_print_uint`
-* `saft_print_float`
-* `saft_print_string`
-
 ## Example
 
 See [test.c](../example/test.c) file.

@@ -1,12 +1,15 @@
 /**
  * Short example showing how to use the jlibc test module.
  * Compile with:
- *     gcc -I ../include --std=c99 test.c
- * or  gcc -I ../include --std=c99 -DJLIBC_PRINT_ENABLE_COLOR test.c
+ *     gcc --std=c99 test.c
+ * or  gcc --std=c99 -DJLIBC_PRINT_ENABLE_COLOR test.c
  */
 
-#define JLBIC_TEST_NO_PREFIX
-#include "test.h"
+#define JLIBC_PRINT_NO_PREFIX 1
+#include "../include/print.h"
+
+#define JLBIC_TEST_NO_PREFIX 1
+#include "../include/test.h"
 
 int main (void)
 {

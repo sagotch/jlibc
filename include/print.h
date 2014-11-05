@@ -25,16 +25,24 @@
 #ifndef JLIBC_PRINT_H
 #define JLIBC_PRINT_H 1
 
+#include <stdio.h>
+
 #ifdef JLIBC_PRINT_ENABLE_COLOR
-#define JLIBC_PRINT_COLOR_RED "\x1b[31m"
-#define JLIBC_PRINT_COLOR_GREEN "\x1b[32m"
-#define JLIBC_PRINT_COLOR_CYAN "\x1b[36m"
-#define JLIBC_PRINT_COLOR_RESET "\x1b[0m"
+#define JLIBC_PRINT_COLOR_RESET   "\x1b[0m"
+#define JLIBC_PRINT_COLOR_RED     "\x1b[31m"
+#define JLIBC_PRINT_COLOR_GREEN   "\x1b[32m"
+#define JLIBC_PRINT_COLOR_YELLOW  "\x1b[33m"
+#define JLIBC_PRINT_COLOR_BLUE    "\x1b[34m"
+#define JLIBC_PRINT_COLOR_MAGENTA "\x1b[35m"
+#define JLIBC_PRINT_COLOR_CYAN    "\x1b[36m"
 #else
-#define JLIBC_PRINT_COLOR_RED ""
-#define JLIBC_PRINT_COLOR_GREEN ""
-#define JLIBC_PRINT_COLOR_CYAN ""
-#define JLIBC_PRINT_COLOR_RESET ""
+#define JLIBC_PRINT_COLOR_RED     ""
+#define JLIBC_PRINT_COLOR_GREEN   ""
+#define JLIBC_PRINT_COLOR_YELLOW  ""
+#define JLIBC_PRINT_COLOR_BLUE    ""
+#define JLIBC_PRINT_COLOR_MAGENTA ""
+#define JLIBC_PRINT_COLOR_CYAN    ""
+#define JLIBC_PRINT_COLOR_RESET   ""
 #endif
 
 #define JLIBC_PRINT_STRINGIFY(x) #x
@@ -54,7 +62,7 @@
  * @param var variable to print.
  * @param print function to use to print `var`.
  */
-#define JLIBC_PRINT_PRINT_VAR(var,print,...)    \
+#define JLIBC_PRINT_PRINT_VAR(var,print)        \
         do                                      \
         {                                       \
                 printf (#var " = ") ;           \
@@ -62,14 +70,30 @@
         }                                       \
         while (0)
 
+/**
+ * Basic printers you do not want to rewrite each time.
+ * The use of `static` prevent `multiple definition` errors.
+ */
+static void jlibc_print_print_int (int d) { printf ("%d", d) ; }
+static void jlibc_print_print_uint (unsigned int u) { printf ("%u", u) ; }
+static void jlibc_print_print_float (float f) { printf ("%f", f) ; }
+static void jlibc_print_print_string (char * s) { printf ("%s", s) ; }
+
 #ifdef JLIBC_PRINT_NO_PREFIX
 #define COLOR_RED      JLIBC_PRINT_COLOR_RED
 #define COLOR_GREEN    JLIBC_PRINT_COLOR_GREEN
+#define COLOR_YELLOW   JLIBC_PRINT_COLOR_YELLOW
+#define COLOR_BLUE     JLIBC_PRINT_COLOR_BLUE
+#define COLOR_MAGENTA  JLIBC_PRINT_COLOR_MAGENTA
 #define COLOR_CYAN     JLIBC_PRINT_COLOR_CYAN
 #define COLOR_RESET    JLIBC_PRINT_COLOR_RESET
 #define LOCATION       JLIBC_PRINT_LOCATION
 #define PRINT_IN_COLOR JLIBC_PRINT_PRINT_IN_COLOR
 #define PRINT_VAR      JLIBC_PRINT_PRINT_VAR
+#define print_int      jlibc_print_print_int
+#define print_uint     jlibc_print_print_uint
+#define print_float    jlibc_print_print_float
+#define print_string   jlibc_print_print_string
 #endif
 
 #endif

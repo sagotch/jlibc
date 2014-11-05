@@ -188,7 +188,6 @@ static struct jlibc_test_suite * jlibc_test_current = &jlibc_test_orphans ;
                              (op2),                    \
                              (print))
 
-
 /**
  * Print total number of tests and success ratio.
  */
@@ -218,15 +217,6 @@ static struct jlibc_test_suite * jlibc_test_current = &jlibc_test_orphans ;
  */
 #define JLIBC_TEST_RETURN_CODE(r) ((r)->test_total == (r)->test_success)
 
-/**
- * Basic printers you do not want to rewrite each time.
- * The use of `static` prevent `multiple definition` errors.
- */
-static void jlibc_test_print_int (int d) { printf ("%d", d) ; }
-static void jlibc_test_print_uint (unsigned int u) { printf ("%u", u) ; }
-static void jlibc_test_print_float (float f) { printf ("%f", f) ; }
-static void jlibc_test_print_string (char * s) { printf ("%s", s) ; }
-
 #ifdef JLBIC_TEST_NO_PREFIX
 #define NEW_SUITE     JLIBC_TEST_NEW_SUITE
 #define START_SUITE   JLIBC_TEST_START_SUITE
@@ -239,10 +229,6 @@ static void jlibc_test_print_string (char * s) { printf ("%s", s) ; }
 #define ASSERT_LTE    JLIBC_TEST_ASSERT_LTE
 #define ASSERT_GT     JLIBC_TEST_ASSERT_GT
 #define ASSERT_GTE    JLIBC_TEST_ASSERT_GTE
-#define print_int     jlibc_test_print_int
-#define print_uint    jlibc_test_print_uint
-#define print_float   jlibc_test_print_float
-#define print_string  jlibc_test_print_string
 #endif
 
 #endif // #ifndef JLIBC_TEST_H

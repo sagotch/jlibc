@@ -88,10 +88,32 @@
         while (0)
 
 
+/**
+ * Same as JBLIC_BENCH_BENCHMARK, but do not check for errors and
+ * do not set a flag to tell that something failed.
+ */
+#define JLIBC_BENCH_UNSAFE_BENCHMARK(call, n, t, clockid)               \
+        do                                                              \
+        {                                                               \
+                int JLIBC_BENCH_i = (n) ;                               \
+                struct timespec JLIBC_BENCH_start, JLIBC_BENCH_end ;    \
+                clock_gettime ((clockid), &JLIBC_BENCH_start) ;         \
+                while ((JLIBC_BENCH_i) --> 0)                           \
+                {                                                       \
+                        call ;                                          \
+                }                                                       \
+                clock_gettime ((clockid), &JLIBC_BENCH_end)             \
+                JLIBC_BENCH_TIMESPEC_DIFF                               \
+                        (t, &JLIBC_BENCH_start, &JLIBC_BENCH_end);      \
+        }                                                               \
+        while (0)
+
+
 #endif // #ifndef JLIBC_BENCH_H
 
 #ifdef JLIBC_BENCH_NO_PREFIX
 #define PRINT_TIMESPEC JLIBC_BENCH_PRINT_TIMESPEC
 #define TIMESPEC_DIFF JLIBC_BENCH_TIMESPEC_DIFF
 #define BENCHMARK JLIBC_BENCH_BENCHMARK
+#define UNSAFE_BENCHMARK JLIBC_BENCH_BENCHMARK
 #endif

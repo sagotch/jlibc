@@ -30,11 +30,11 @@
  * timespec structure printing function.
  */
 #define JLIBC_BENCH_PRINT_TIMESPEC(t)                   \
-        printf ("%ld.%09ld", (t).tv_sec, (t).tv_nsec)
+        printf ("%ld.%09ld", (t)->tv_sec, (t)->tv_nsec)
 
 /**
  * Compute difference between to timespec structures.
- * Every parameter is a struct timespec.
+ * Every parameter is a struct timespec pointer.
  * @param res will receive the diff.
  * @param start first point in time.
  * @param start second point in time.
@@ -42,12 +42,12 @@
 #define JLIBC_BENCH_TIMESPEC_DIFF(res,start,end)                        \
         do                                                              \
         {                                                               \
-                (res).tv_sec = (end).tv_sec - (start).tv_sec ;          \
-                (res).tv_nsec = (end).tv_nsec - (start).tv_nsec ;       \
-                if ((res).tv_nsec < 0)                                  \
+                (res)->tv_sec = (end)->tv_sec - (start)->tv_sec ;       \
+                (res)->tv_nsec = (end)->tv_nsec - (start)->tv_nsec ;    \
+                if ((res)->tv_nsec < 0)                                 \
                 {                                                       \
-                        (res).tv_sec -= 1;                              \
-                        (res).tv_nsec += 1E9 ;                          \
+                        (res)->tv_sec -= 1;                             \
+                        (res)->tv_nsec += 1E9 ;                         \
                 }                                                       \
         }                                                               \
         while (0)
@@ -55,7 +55,7 @@
  *
  * @param expression you want to benchmark. *MUST* return 0 on success.
  * @param n number of times `call` should be repeated.
- * @param t timespec structure to be filled with benchmark result.
+ * @param t pointer to timespec structure to be filled with benchmark result.
  * @param clockid clockid_t to use to get times.
  * @param failure_flag variable which will be set to one if `call` fails.
  */
@@ -66,24 +66,24 @@
                 struct timespec JLIBC_BENCH_start, JLIBC_BENCH_end ;    \
                 if (clock_gettime ((clockid), &JLIBC_BENCH_start))      \
                 {                                                       \
-                        (failure_flag) = 1 ;                            \
+                        *(failure_flag) = 1 ;                           \
                         break ;                                         \
                 }                                                       \
                 while ((JLIBC_BENCH_i) --> 0)                           \
                 {                                                       \
                         if (call)                                       \
                         {                                               \
-                                (failure_flag) = 1 ;                    \
+                                *(failure_flag) = 1 ;                   \
                                 break ;                                 \
                         }                                               \
                 }                                                       \
                 if (clock_gettime ((clockid), &JLIBC_BENCH_end))        \
                 {                                                       \
-                        (failure_flag) = 1 ;                            \
+                        *(failure_flag) = 1 ;                           \
                         break ;                                         \
                 }                                                       \
                 JLIBC_BENCH_TIMESPEC_DIFF                               \
-                        (t, JLIBC_BENCH_start, JLIBC_BENCH_end);        \
+                        (t, &JLIBC_BENCH_start, &JLIBC_BENCH_end);      \
         }                                                               \
         while (0)
 

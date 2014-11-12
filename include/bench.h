@@ -102,7 +102,7 @@
                 {                                                       \
                         call ;                                          \
                 }                                                       \
-                clock_gettime ((clockid), &JLIBC_BENCH_end)             \
+                clock_gettime ((clockid), &JLIBC_BENCH_end) ;           \
                 JLIBC_BENCH_TIMESPEC_DIFF                               \
                         (t, &JLIBC_BENCH_start, &JLIBC_BENCH_end);      \
         }                                                               \

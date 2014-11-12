@@ -5,3 +5,4 @@
 * [print](doc/print.md): Pretty printing.
 * [test](doc/test.md): Unit testing.
 * [arg](doc/arg.md): Command line arguments parsing and options setting.
+* [bench](doc/bench.md): Function benchmarking.

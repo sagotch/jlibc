@@ -25,6 +25,11 @@
 #ifndef JLIBC_BENCH_H
 #define JLIBC_BENCH_H 1
 
+enum JBLIC_BENCH_ERROR {
+        JLIBC_BENCH_ERROR_CLOCK_GETTIME,
+        JLIBC_BENCH_ERROR_CALL,
+        JLIBC_BENCH_SUCCESS
+} ;
 
 /**
  * timespec structure printing function.
@@ -57,7 +62,7 @@
  * @param n number of times `call` should be repeated.
  * @param t pointer to timespec structure to be filled with benchmark result.
  * @param clockid clockid_t to use to get times.
- * @param failure_flag variable which will be set to one if `call` fails.
+ * @param failure_flag int pointer which will be set if failure happens.
  */
 #define JLIBC_BENCH_BENCHMARK(call, n, t, clockid, failure_flag)        \
         do                                                              \
@@ -66,24 +71,28 @@
                 struct timespec JLIBC_BENCH_start, JLIBC_BENCH_end ;    \
                 if (clock_gettime ((clockid), &JLIBC_BENCH_start))      \
                 {                                                       \
-                        *(failure_flag) = 1 ;                           \
+                        *(failure_flag) =                               \
+                                JLIBC_BENCH_ERROR_CLOCK_GETTIME ;       \
                         break ;                                         \
                 }                                                       \
                 while ((JLIBC_BENCH_i) --> 0)                           \
                 {                                                       \
                         if (call)                                       \
                         {                                               \
-                                *(failure_flag) = 1 ;                   \
+                                *(failure_flag) =                       \
+                                        JLIBC_BENCH_ERROR_CALL ;        \
                                 break ;                                 \
                         }                                               \
                 }                                                       \
                 if (clock_gettime ((clockid), &JLIBC_BENCH_end))        \
                 {                                                       \
-                        *(failure_flag) = 1 ;                           \
+                        *(failure_flag) =                               \
+                                JLIBC_BENCH_ERROR_CLOCK_GETTIME ;       \
                         break ;                                         \
                 }                                                       \
                 JLIBC_BENCH_TIMESPEC_DIFF                               \
                         (t, &JLIBC_BENCH_start, &JLIBC_BENCH_end);      \
+                *(failure_flag) = JLIBC_BENCH_SUCCESS ;                 \
         }                                                               \
         while (0)
 
@@ -115,5 +124,8 @@
 #define PRINT_TIMESPEC JLIBC_BENCH_PRINT_TIMESPEC
 #define TIMESPEC_DIFF JLIBC_BENCH_TIMESPEC_DIFF
 #define BENCHMARK JLIBC_BENCH_BENCHMARK
-#define UNSAFE_BENCHMARK JLIBC_BENCH_BENCHMARK
+#define UNSAFE_BENCHMARK JLIBC_UNSAFE_BENCH_BENCHMARK
+#define ERROR_CLOCK_GETTIME JLIBC_BENCH_ERROR_CLOCK_GETTIME
+#define ERROR_CALL JLIBC_BENCH_ERROR_CALL
+#define SUCCESS JLIBC_BENCH_SUCCESS
 #endif
